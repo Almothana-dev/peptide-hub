@@ -15,33 +15,34 @@ const Auth = () => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === "SIGNED_IN" && session) {
-        // Send welcome email when user signs up
-        if (event === "SIGNED_UP") {
-          try {
-            const { error } = await supabase.functions.invoke("send-email", {
-              body: {
-                type: "welcome",
-                to: session.user.email,
-                username: session.user.email?.split("@")[0],
-              },
-            });
+        navigate("/");
+      }
+      
+      if (event === "SIGNED_UP" && session) {
+        try {
+          const { error } = await supabase.functions.invoke("send-email", {
+            body: {
+              type: "welcome",
+              to: session.user.email,
+              username: session.user.email?.split("@")[0],
+            },
+          });
 
-            if (error) {
-              console.error("Error sending welcome email:", error);
-              toast({
-                title: "Welcome!",
-                description: "Sign up successful, but we couldn't send you a welcome email.",
-                variant: "destructive",
-              });
-            } else {
-              toast({
-                title: "Welcome!",
-                description: "Check your email for a welcome message.",
-              });
-            }
-          } catch (error) {
-            console.error("Error invoking send-email function:", error);
+          if (error) {
+            console.error("Error sending welcome email:", error);
+            toast({
+              title: "Welcome!",
+              description: "Sign up successful, but we couldn't send you a welcome email.",
+              variant: "destructive",
+            });
+          } else {
+            toast({
+              title: "Welcome!",
+              description: "Check your email for a welcome message.",
+            });
           }
+        } catch (error) {
+          console.error("Error invoking send-email function:", error);
         }
         navigate("/");
       }
