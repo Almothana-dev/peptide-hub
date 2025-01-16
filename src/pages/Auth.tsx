@@ -5,20 +5,50 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import type { AuthError } from "@supabase/supabase-js";
+import { useToast } from "@/hooks/use-toast";
 
 const Auth = () => {
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState("");
+  const { toast } = useToast();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === "SIGNED_IN" && session) {
+        // Send welcome email when user signs up
+        if (event === "SIGNED_UP") {
+          try {
+            const { error } = await supabase.functions.invoke("send-email", {
+              body: {
+                type: "welcome",
+                to: session.user.email,
+                username: session.user.email?.split("@")[0],
+              },
+            });
+
+            if (error) {
+              console.error("Error sending welcome email:", error);
+              toast({
+                title: "Welcome!",
+                description: "Sign up successful, but we couldn't send you a welcome email.",
+                variant: "destructive",
+              });
+            } else {
+              toast({
+                title: "Welcome!",
+                description: "Check your email for a welcome message.",
+              });
+            }
+          } catch (error) {
+            console.error("Error invoking send-email function:", error);
+          }
+        }
         navigate("/");
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, toast]);
 
   const getErrorMessage = (error: AuthError) => {
     switch (error.message) {
