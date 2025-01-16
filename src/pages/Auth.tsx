@@ -13,41 +13,41 @@ const Auth = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session) => {
-      if (event === "SIGNED_IN" && session) {
-        navigate("/");
-      }
-      
-      if (event === "SIGNED_UP" && session) {
-        try {
-          const { error } = await supabase.functions.invoke("send-email", {
-            body: {
-              type: "welcome",
-              to: session.user.email,
-              username: session.user.email?.split("@")[0],
-            },
-          });
-
-          if (error) {
-            console.error("Error sending welcome email:", error);
-            toast({
-              title: "Welcome!",
-              description: "Sign up successful, but we couldn't send you a welcome email.",
-              variant: "destructive",
-            });
-          } else {
-            toast({
-              title: "Welcome!",
-              description: "Check your email for a welcome message.",
-            });
-          }
-        } catch (error) {
-          console.error("Error invoking send-email function:", error);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event: AuthChangeEvent, session) => {
+        if (event === "SIGNED_IN" && session) {
+          navigate("/");
         }
-        navigate("/");
+        
+        if (event === "SIGNED_UP" && session) {
+          try {
+            const { error } = await supabase.functions.invoke("send-email", {
+              body: {
+                type: "welcome",
+                to: session.user.email,
+                username: session.user.email?.split("@")[0],
+              },
+            });
+            if (error) {
+              console.error("Error sending welcome email:", error);
+              toast({
+                title: "Welcome!",
+                description: "Sign up successful, but we couldn't send you a welcome email.",
+                variant: "destructive",
+              });
+            } else {
+              toast({
+                title: "Welcome!",
+                description: "Check your email for a welcome message.",
+              });
+            }
+          } catch (error) {
+            console.error("Error invoking send-email function:", error);
+          }
+          navigate("/");
+        }
       }
-    });
-
+    );
     return () => subscription.unsubscribe();
   }, [navigate, toast]);
 
@@ -72,7 +72,6 @@ const Auth = () => {
           Sign in to your account
         </h2>
       </div>
-
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           {errorMessage && (
