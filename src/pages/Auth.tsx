@@ -4,8 +4,17 @@ import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import type { AuthError, AuthChangeEvent } from "@supabase/supabase-js";
+import type { AuthError } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
+
+type AuthChangeEvent = 
+  | "SIGNED_IN" 
+  | "SIGNED_UP" 
+  | "SIGNED_OUT" 
+  | "USER_UPDATED" 
+  | "USER_DELETED" 
+  | "PASSWORD_RECOVERY"
+  | "INITIAL_SESSION";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -14,12 +23,14 @@ const Auth = () => {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event: AuthChangeEvent, session) => {
-        if (event === "SIGNED_IN" && session) {
+      async (event, session) => {
+        console.log('Auth event:', event); // For debugging
+
+        if ((event as AuthChangeEvent) === "SIGNED_IN" && session) {
           navigate("/");
         }
         
-        if (event === "SIGNED_UP" && session) {
+        if ((event as AuthChangeEvent) === "SIGNED_UP" && session) {
           try {
             const { error } = await supabase.functions.invoke("send-email", {
               body: {
