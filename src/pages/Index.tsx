@@ -27,9 +27,8 @@ const Index = () => {
           <div className="flex items-center gap-6">
             <nav className="space-x-6">
               <a href="#" className="text-gray-600 hover:text-gray-900">Home</a>
-              <a href="#" className="text-gray-600 hover:text-gray-900">Supplements</a>
               <a href="#" className="text-gray-600 hover:text-gray-900">Stacks</a>
-              <a href="#" className="text-gray-600 hover:text-gray-900">About</a>
+              <a href="#" className="text-gray-600 hover:text-gray-900">Profile</a>
             </nav>
             <Button
               variant="outline"
