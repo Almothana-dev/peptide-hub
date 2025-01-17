@@ -33,6 +33,192 @@ export type Database = {
         }
         Relationships: []
       }
+      protocol_categories: {
+        Row: {
+          category: Database["public"]["Enums"]["protocol_category"]
+          protocol_id: string
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["protocol_category"]
+          protocol_id: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["protocol_category"]
+          protocol_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "protocol_categories_protocol_id_fkey"
+            columns: ["protocol_id"]
+            isOneToOne: false
+            referencedRelation: "protocols"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      protocol_comments: {
+        Row: {
+          comment: string
+          created_at: string
+          id: string
+          protocol_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          comment: string
+          created_at?: string
+          id?: string
+          protocol_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          comment?: string
+          created_at?: string
+          id?: string
+          protocol_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "protocol_comments_protocol_id_fkey"
+            columns: ["protocol_id"]
+            isOneToOne: false
+            referencedRelation: "protocols"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "protocol_comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      protocol_ratings: {
+        Row: {
+          created_at: string
+          id: string
+          protocol_id: string
+          rating: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          protocol_id: string
+          rating: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          protocol_id?: string
+          rating?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "protocol_ratings_protocol_id_fkey"
+            columns: ["protocol_id"]
+            isOneToOne: false
+            referencedRelation: "protocols"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "protocol_ratings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      protocol_steps: {
+        Row: {
+          created_at: string
+          dosage: string
+          frequency: string
+          id: string
+          protocol_id: string
+          step_number: number
+          supplement_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          dosage: string
+          frequency: string
+          id?: string
+          protocol_id: string
+          step_number: number
+          supplement_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          dosage?: string
+          frequency?: string
+          id?: string
+          protocol_id?: string
+          step_number?: number
+          supplement_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "protocol_steps_protocol_id_fkey"
+            columns: ["protocol_id"]
+            isOneToOne: false
+            referencedRelation: "protocols"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      protocols: {
+        Row: {
+          average_rating: number | null
+          created_at: string
+          creator_id: string
+          description: string | null
+          id: string
+          title: string
+          total_ratings: number | null
+          updated_at: string
+        }
+        Insert: {
+          average_rating?: number | null
+          created_at?: string
+          creator_id: string
+          description?: string | null
+          id?: string
+          title: string
+          total_ratings?: number | null
+          updated_at?: string
+        }
+        Update: {
+          average_rating?: number | null
+          created_at?: string
+          creator_id?: string
+          description?: string | null
+          id?: string
+          title?: string
+          total_ratings?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "protocols_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -41,7 +227,15 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      protocol_category:
+        | "focus"
+        | "memory"
+        | "cognition"
+        | "recovery"
+        | "sleep"
+        | "anti_aging"
+        | "immune_health"
+        | "general_wellness"
     }
     CompositeTypes: {
       [_ in never]: never
