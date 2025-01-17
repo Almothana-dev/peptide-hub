@@ -3,18 +3,57 @@ import { Input } from "@/components/ui/input";
 import { Search, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Types for our protocol data
+type Protocol = {
+  id: string;
+  title: string;
+  description: string;
+  creator: {
+    username: string;
+  };
+  average_rating: number;
+  total_ratings: number;
+  categories: { category: string }[];
+  steps: {
+    step_number: number;
+    supplement_name: string;
+    dosage: string;
+    frequency: string;
+  }[];
+};
 
 const Index = () => {
   const navigate = useNavigate();
+
+  const { data: protocols, isLoading, error } = useQuery({
+    queryKey: ['protocols'],
+    queryFn: async () => {
+      const { data: protocols, error } = await supabase
+        .from('protocols')
+        .select(`
+          *,
+          creator:profiles(username),
+          categories:protocol_categories(category),
+          steps:protocol_steps(step_number, supplement_name, dosage, frequency)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return protocols as Protocol[];
+    },
+  });
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/auth");
   };
 
-  const renderStars = (count) => {
+  const renderStars = (rating: number) => {
     return Array(5).fill(0).map((_, index) => (
-      <span key={index} className={`text-yellow-400`}>★</span>
+      <span key={index} className={`text-yellow-400 ${index >= rating ? 'opacity-30' : ''}`}>★</span>
     ));
   };
 
@@ -78,7 +117,6 @@ const Index = () => {
             <button className="whitespace-nowrap px-4 py-2 rounded-full bg-gray-100 hover:bg-gray-200">🎯 Cognition</button>
             <button className="whitespace-nowrap px-4 py-2 rounded-full bg-gray-100 hover:bg-gray-200">🔄 Recovery</button>
             <button className="whitespace-nowrap px-4 py-2 rounded-full bg-gray-100 hover:bg-gray-200">😴 Sleep</button>
-            {/* Add more category buttons as needed */}
           </div>
         </div>
       </section>
@@ -95,111 +133,77 @@ const Index = () => {
             </select>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Longevity Protocol Card */}
-            <div className="border rounded-lg p-6 hover:shadow-lg transition-shadow">
-              <h3 className="text-2xl font-bold mb-2">Longevity Protocol</h3>
-              <p className="text-gray-600 mb-2">Created by: Prof. David Sinclair</p>
-              <p className="text-gray-700 mb-4">Aims to slow aging and promote cellular health</p>
-              
-              <div className="flex items-center gap-2 mb-4">
-                {renderStars(5)}
-                <span className="text-gray-600">(2 reviews)</span>
-              </div>
-
-              <div className="flex flex-wrap gap-2 mb-6">
-                <span className="text-sm bg-orange-100 text-orange-800 px-3 py-1 rounded-full">👴 Anti-Aging</span>
-                <span className="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-full">🧬 Cellular Health</span>
-                <span className="text-sm bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full">⚡ Energy</span>
-              </div>
-
-              <div className="space-y-2 mb-6">
-                <p className="text-gray-700">NMN (1) - 1000mg daily</p>
-                <p className="text-gray-700">Resveratrol (2) - 1000mg daily</p>
-                <p className="text-gray-700">Metformin (3) - 500mg twice daily</p>
-                <p className="text-gray-700">Berberine (4) - 500mg thrice daily</p>
-              </div>
-
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  <span className="text-gray-600">112</span>
-                  <ChevronDown className="h-4 w-4 text-gray-600" />
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="border rounded-lg p-6">
+                  <Skeleton className="h-8 w-3/4 mb-4" />
+                  <Skeleton className="h-4 w-1/2 mb-2" />
+                  <Skeleton className="h-4 w-full mb-4" />
+                  <div className="flex gap-2 mb-4">
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <Skeleton key={s} className="h-4 w-4" />
+                    ))}
+                  </div>
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-full" />
+                  </div>
                 </div>
-                <div className="text-sm text-gray-600">
-                  References: [1] [2] [3] [4]
-                </div>
-              </div>
+              ))}
             </div>
-
-            {/* Immune Booster Card */}
-            <div className="border rounded-lg p-6 hover:shadow-lg transition-shadow">
-              <h3 className="text-2xl font-bold mb-2">Immune Booster</h3>
-              <p className="text-gray-600 mb-2">Created by: Dr. Emily Chen</p>
-              <p className="text-gray-700 mb-4">Strengthens immune system and overall health</p>
-              
-              <div className="flex items-center gap-2 mb-4">
-                {renderStars(5)}
-                <span className="text-gray-600">(2 reviews)</span>
-              </div>
-
-              <div className="flex flex-wrap gap-2 mb-6">
-                <span className="text-sm bg-red-100 text-red-800 px-3 py-1 rounded-full">🛡️ Immune Health</span>
-                <span className="text-sm bg-green-100 text-green-800 px-3 py-1 rounded-full">🌿 General Wellness</span>
-                <span className="text-sm bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full">⚡ Energy</span>
-              </div>
-
-              <div className="space-y-2 mb-6">
-                <p className="text-gray-700">Vitamin C (1) - 1000mg daily</p>
-                <p className="text-gray-700">Zinc (2) - 30mg daily</p>
-                <p className="text-gray-700">Quercetin (3) - 500mg twice daily</p>
-                <p className="text-gray-700">Vitamin D3 (4) - 5000 IU daily</p>
-              </div>
-
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  <span className="text-gray-600">89</span>
-                  <ChevronDown className="h-4 w-4 text-gray-600" />
-                </div>
-                <div className="text-sm text-gray-600">
-                  References: [1] [2] [3] [4]
-                </div>
-              </div>
+          ) : error ? (
+            <div className="text-center text-red-600">
+              Failed to load protocols. Please try again later.
             </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {protocols?.map((protocol) => (
+                <div key={protocol.id} className="border rounded-lg p-6 hover:shadow-lg transition-shadow">
+                  <h3 className="text-2xl font-bold mb-2">{protocol.title}</h3>
+                  <p className="text-gray-600 mb-2">Created by: {protocol.creator.username}</p>
+                  <p className="text-gray-700 mb-4">{protocol.description}</p>
+                  
+                  <div className="flex items-center gap-2 mb-4">
+                    {renderStars(protocol.average_rating)}
+                    <span className="text-gray-600">({protocol.total_ratings} reviews)</span>
+                  </div>
 
-            {/* Cognitive Boost Card */}
-            <div className="border rounded-lg p-6 hover:shadow-lg transition-shadow">
-              <h3 className="text-2xl font-bold mb-2">Cognitive Boost</h3>
-              <p className="text-gray-600 mb-2">Created by: Alex T.</p>
-              <p className="text-gray-700 mb-4">Improved focus and memory</p>
-              
-              <div className="flex items-center gap-2 mb-4">
-                {renderStars(5)}
-                <span className="text-gray-600">(2 reviews)</span>
-              </div>
+                  <div className="flex flex-wrap gap-2 mb-6">
+                    {protocol.categories.map(({ category }, index) => (
+                      <span 
+                        key={index}
+                        className="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-full"
+                      >
+                        {category}
+                      </span>
+                    ))}
+                  </div>
 
-              <div className="flex flex-wrap gap-2 mb-6">
-                <span className="text-sm bg-purple-100 text-purple-800 px-3 py-1 rounded-full">👁️ Focus</span>
-                <span className="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-full">🧠 Memory</span>
-                <span className="text-sm bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full">🎯 Cognition</span>
-              </div>
+                  <div className="space-y-2 mb-6">
+                    {protocol.steps
+                      .sort((a, b) => a.step_number - b.step_number)
+                      .map((step, index) => (
+                        <p key={index} className="text-gray-700">
+                          {step.supplement_name} ({index + 1}) - {step.dosage} {step.frequency}
+                        </p>
+                      ))}
+                  </div>
 
-              <div className="space-y-2 mb-6">
-                <p className="text-gray-700">Modafinil (1) - 100mg daily</p>
-                <p className="text-gray-700">Lion's Mane (2) - 500mg twice daily</p>
-                <p className="text-gray-700">Alpha-GPC (3) - 300mg with Modafinil</p>
-              </div>
-
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  <span className="text-gray-600">76</span>
-                  <ChevronDown className="h-4 w-4 text-gray-600" />
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-600">{protocol.total_ratings}</span>
+                      <ChevronDown className="h-4 w-4 text-gray-600" />
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      References: {protocol.steps.map((_, i) => `[${i + 1}]`).join(' ')}
+                    </div>
+                  </div>
                 </div>
-                <div className="text-sm text-gray-600">
-                  References: [1] [2] [3]
-                </div>
-              </div>
+              ))}
             </div>
-          </div>
+          )}
         </div>
       </section>
     </div>
