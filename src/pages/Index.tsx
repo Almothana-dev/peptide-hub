@@ -10,12 +10,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 type Protocol = {
   id: string;
   title: string;
-  description: string;
+  description: string | null;
   creator: {
-    username: string;
+    username: string | null;
   };
-  average_rating: number;
-  total_ratings: number;
+  average_rating: number | null;
+  total_ratings: number | null;
   categories: { category: string }[];
   steps: {
     step_number: number;
@@ -51,15 +51,16 @@ const Index = () => {
     navigate("/auth");
   };
 
-  const renderStars = (rating: number) => {
+  const renderStars = (rating: number | null) => {
+    const ratingValue = rating || 0;
     return Array(5).fill(0).map((_, index) => (
-      <span key={index} className={`text-yellow-400 ${index >= rating ? 'opacity-30' : ''}`}>★</span>
+      <span key={index} className={`text-yellow-400 ${index >= ratingValue ? 'opacity-30' : ''}`}>★</span>
     ));
   };
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header section remains the same */}
+      {/* Header section */}
       <header className="border-b">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-[#0065A7]">PeptideHub</h1>
@@ -80,7 +81,7 @@ const Index = () => {
         </div>
       </header>
 
-      {/* Hero Section remains the same */}
+      {/* Hero Section */}
       <section className="bg-[#0065A7] text-white py-20">
         <div className="container mx-auto px-4 text-center space-y-8">
           <h1 className="text-4xl md:text-5xl font-bold max-w-3xl mx-auto">
@@ -162,12 +163,12 @@ const Index = () => {
               {protocols?.map((protocol) => (
                 <div key={protocol.id} className="border rounded-lg p-6 hover:shadow-lg transition-shadow">
                   <h3 className="text-2xl font-bold mb-2">{protocol.title}</h3>
-                  <p className="text-gray-600 mb-2">Created by: {protocol.creator.username}</p>
+                  <p className="text-gray-600 mb-2">Created by: {protocol.creator.username || 'Anonymous'}</p>
                   <p className="text-gray-700 mb-4">{protocol.description}</p>
                   
                   <div className="flex items-center gap-2 mb-4">
                     {renderStars(protocol.average_rating)}
-                    <span className="text-gray-600">({protocol.total_ratings} reviews)</span>
+                    <span className="text-gray-600">({protocol.total_ratings || 0} reviews)</span>
                   </div>
 
                   <div className="flex flex-wrap gap-2 mb-6">
